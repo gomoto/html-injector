@@ -2,13 +2,19 @@
   "name": "html-injector",
   "version": "1.0.0",
   "description": "Inject file paths and file content into an HTML file",
-  "main": "index.js",
+  "main": "src/index.js",
+  "bin": {
+    "html-injector": "./cli.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
-    "type" : "git",
-    "url" : "git+https://github.com/gomoto/html-minifier.git"
+    "type": "git",
+    "url": "git+https://github.com/gomoto/html-minifier.git"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^2.9.0"
+  }
 }
