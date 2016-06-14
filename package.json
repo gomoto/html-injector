@@ -1,6 +1,6 @@
 {
   "name": "html-injector",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Inject file paths and file content into an HTML file",
   "main": "src/index.js",
   "bin": {
