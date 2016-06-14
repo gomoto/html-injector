@@ -29,6 +29,7 @@
 var package = require('./package.json');
 var injector = require('./' + package.main);
 var program = require('commander');
+var UsageError = require('./src/UsageError');
 
 program._name = package.name;
 
@@ -42,6 +43,12 @@ try {
   injector.apply(null, program.args);
 }
 catch (e) {
-  console.error('Injector error!');
+  if (e instanceof UsageError) {
+    console.log(program.usage());
+    console.log(e.message);
+  }
+  else {
+    console.error('Injector error!', e);
+  }
   process.exit(1);
 }
