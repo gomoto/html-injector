@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/gomoto/html-minifier.git"
+    "url": "git+https://github.com/gomoto/html-injector.git"
   },
   "license": "MIT",
   "dependencies": {
