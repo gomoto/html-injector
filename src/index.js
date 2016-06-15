@@ -1,5 +1,4 @@
 var fs = require('fs');
-var globber = require('glob');
 var replace = require('replacestream');
 var UsageError = require('./UsageError');
 var utils = require('./utils');
@@ -46,16 +45,7 @@ module.exports = function injector() {
 
     var template = arguments[1];
 
-    var files = [];
-
-    globs.forEach((glob) => {
-      matches = globber.sync(glob);
-      matches.forEach((match) => {
-        files.push(match);
-      });
-    });
-
-    var results = files.map((file) => {
+    var results = utils.expandGlobs(globs).map((file) => {
       return template.replace(bracketRegex, function() {
 
         // Build array of transform functions, but don't call them yet.
