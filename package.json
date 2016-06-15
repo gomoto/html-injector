@@ -10,9 +10,16 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "postversion": "git push --tags"
   },
+  "files": [
+    "src/*.js",
+    "cli.js"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/gomoto/html-injector.git"
+  },
+  "bugs": {
+    "url": "https://github.com/gomoto/html-injector/issues",
   },
   "license": "MIT",
   "dependencies": {
