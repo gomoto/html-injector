@@ -19,7 +19,7 @@
     "url": "git+https://github.com/gomoto/html-injector.git"
   },
   "bugs": {
-    "url": "https://github.com/gomoto/html-injector/issues",
+    "url": "https://github.com/gomoto/html-injector/issues"
   },
   "license": "MIT",
   "dependencies": {
