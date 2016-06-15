@@ -1,7 +1,7 @@
 {
   "name": "html-injector",
   "version": "1.2.0",
-  "description": "Inject file paths and file content into an HTML file",
+  "description": "Inject file paths and content into HTML",
   "main": "src/index.js",
   "bin": {
     "html-injector": "./cli.js"
