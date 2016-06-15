@@ -37,7 +37,7 @@ module.exports = function injector() {
 
   var startInject = '<!\\-\\-\\s*inject:' + key + '\\s*\\-\\->';
   var endInject = '<!\\-\\-\\s*endinject\\s*\\-\\->';
-  var pattern = startInject + '([\\s\\S]*)' + endInject;
+  var pattern = startInject + '([\\s\\S]*?)' + endInject;
   var regex = new RegExp(pattern, 'g');
 
   // repeat template (stuff between the start and end tags) for each glob
