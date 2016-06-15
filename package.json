@@ -1,6 +1,6 @@
 {
   "name": "html-injector",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Inject file paths and file content into an HTML file",
   "main": "src/index.js",
   "bin": {
@@ -10,9 +10,16 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "postversion": "git push --tags"
   },
+  "files": [
+    "src/*.js",
+    "cli.js"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/gomoto/html-injector.git"
+  },
+  "bugs": {
+    "url": "https://github.com/gomoto/html-injector/issues",
   },
   "license": "MIT",
   "dependencies": {
