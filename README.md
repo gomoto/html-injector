@@ -11,7 +11,7 @@ $ html-injector target key globs...
 ```
 var injector = require('html-injector);
 
-injector(target, key, globs);
+injector(target, key, globs, options);
 ```
 
 
@@ -46,6 +46,15 @@ The key is specified in the `inject` tag after a colon. In the example above, th
 #### globs
 
 One or more [node-glob](https://github.com/isaacs/node-glob) patterns. Files matching the globs will get their paths or content injected into target.
+
+#### options (for node.js usage)
+
+| Option       | Type     | Description |
+|--------------|----------|-------------|
+| `outfile`    | `string` | Output file to which injected content is written |
+| `transforms` | `{[name: string]: (pathOrContent: string) => string}` | JavaScript object which defines transform functions |
+
+For command-line usage, specify output file with a redirect, and specify transforms in a special file called hi.js at the root of the project (see examples).
 
 
 
