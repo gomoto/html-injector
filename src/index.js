@@ -34,6 +34,7 @@ module.exports = function injector() {
   }
 
   var transforms = options.transforms || {};
+  var outfile = options.outfile;
 
   var startInject = '<!\\-\\-\\s*inject:' + key + '\\s*\\-\\->';
   var endInject = '<!\\-\\-\\s*endinject\\s*\\-\\->';
@@ -89,6 +90,6 @@ module.exports = function injector() {
 
   fs.createReadStream(target)
   .pipe(replace(regex, fn))
-  .pipe(process.stdout);
+  .pipe(outfile ? fs.createWriteStream(outfile) : process.stdout);
 
 }
