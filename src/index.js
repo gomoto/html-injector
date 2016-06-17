@@ -1,5 +1,5 @@
 var fs = require('fs');
-var replace = require('replacestream');
+var replacestream = require('replacestream');
 var UsageError = require('./UsageError');
 var utils = require('./utils');
 
@@ -7,16 +7,15 @@ var utils = require('./utils');
 var bracketRegex = new RegExp('\\{([\\s\\S]*?)\\}','g');
 
 
-module.exports = function injector() {
+var replace = function() {
 
   if (arguments.length < 3) {
     throw new UsageError('Not enough arguments');
   }
 
-  // convert to Array
   var args = Array.from(arguments);
 
-  var target = args[0];
+  var instream = args[0];
   var key = args[1];
   var globs;
   var options;
@@ -34,7 +33,6 @@ module.exports = function injector() {
   }
 
   var transforms = options.transforms || {};
-  var outfile = options.outfile;
 
   var startInject = '<!\\-\\-\\s*inject:' + key + '\\s*\\-\\->';
   var endInject = '<!\\-\\-\\s*endinject\\s*\\-\\->';
@@ -88,8 +86,39 @@ module.exports = function injector() {
 
   };
 
-  fs.createReadStream(target)
-  .pipe(replace(regex, fn))
-  .pipe(outfile ? fs.createWriteStream(outfile) : process.stdout);
+  var outstream = instream.pipe(replacestream(regex, fn));
+
+  return {
+    replace: replace.bind(null, outstream),
+    write: write.bind(null, outstream)
+  };
+
+};
+
+
+var write = function(instream, outfile) {
+
+  instream.pipe(outfile ? fs.createWriteStream(outfile) : process.stdout);
+
+  return {
+    replace: replace.bind(null, instream),
+    write: write.bind(null, instream)
+  };
+
+};
+
+
+module.exports = function inject(infile) {
+
+  if (typeof infile !== 'string') {
+    throw new UsageError('Infile must be a string');
+  }
+
+  var outstream = fs.createReadStream(infile);
+
+  return {
+    replace: replace.bind(null, outstream),
+    write: write.bind(null, outstream)
+  };
 
 }
