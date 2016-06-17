@@ -27,7 +27,7 @@
  */
 
 var package = require('./package.json');
-var injector = require('./' + package.main);
+var inject = require('./' + package.main);
 var program = require('commander');
 var UsageError = require('./src/UsageError');
 
@@ -39,8 +39,11 @@ program
 .version(package.version)
 .parse(process.argv);
 
+var target = program.args[0];
+var rest = program.args.slice(1);
+
 try {
-  injector.apply(null, program.args);
+  inject(target).replace.apply(null, rest).write();
 }
 catch (e) {
   if (e instanceof UsageError) {
