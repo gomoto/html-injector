@@ -37,6 +37,8 @@ inject(infile)
 
 #### infile
 
+`string`
+
 HTML file into which stuff gets injected.
 
 Use special start and end injection tags in the infile to mark content to be replaced by injection.
@@ -55,11 +57,15 @@ Content between the `inject` and `endinject` comment nodes will repeat once per 
 
 #### key
 
+`string`
+
 String which differentiates pairs of injection tags.
 
 The key is specified in the `inject` tag after a colon. In the example above, the key is `js`.
 
-#### globs
+#### globs...
+
+`string...`
 
 One or more [node-glob](https://github.com/isaacs/node-glob) patterns. Files matching the globs will get their paths or content injected into infile.
 
@@ -76,6 +82,16 @@ Options can alternatively be specified in a special file called hi.js at the roo
 File to which injected content gets written.
 
 If outfile is not specified, content gets written to stdout.
+
+If only one parameter is passed to write(), it must be outfile. Callback cannot be the only parameter passed to write().
+
+#### callback (optional)
+
+`() => void`
+
+Function which is called after outfile has been written to disk.
+
+outfile must be specified in order to use callback.
 
 
 
