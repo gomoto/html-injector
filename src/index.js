@@ -5,6 +5,7 @@ var utils = require('./utils');
 
 
 var bracketRegex = new RegExp('\\{([\\s\\S]*?)\\}','g');
+var noop = Function.prototype;
 
 
 var replace = function() {
@@ -96,9 +97,33 @@ var replace = function() {
 };
 
 
-var write = function(instream, outfile) {
+var write = function(instream, outfile, callback) {
 
-  instream.pipe(outfile ? fs.createWriteStream(outfile) : process.stdout);
+  var writestream, cb;
+
+  switch(arguments.length) {
+    case 1:
+      writestream = process.stdout;
+      cb = noop;
+      break;
+    case 2:
+      if (typeof outfile === 'string') {
+        writestream = fs.createWriteStream(outfile);
+        cb = noop;
+      }
+      else {
+        throw new UsageError('outfile must be a string. Cannot specify callback without outfile');
+      }
+      break;
+    case 3:
+      writestream = fs.createWriteStream(outfile);
+      cb = callback;
+      break;
+    default:
+      throw new UsageError('Invalid arguments passed to `write`');
+  }
+
+  instream.pipe(writestream).on('finish', cb);
 
   return {
     replace: replace.bind(null, instream),
