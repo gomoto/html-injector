@@ -79,6 +79,8 @@ Options can alternatively be specified in a special file called hi.js at the roo
 
 #### outfile (optional)
 
+`string`
+
 File to which injected content gets written.
 
 If outfile is not specified, content gets written to stdout.
