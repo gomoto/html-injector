@@ -90,6 +90,76 @@ var replace = function() {
   var outstream = instream.pipe(replacestream(regex, fn));
 
   return {
+    replaceValues: replaceValues.bind(null, outstream),
+    replace: replace.bind(null, outstream),
+    write: write.bind(null, outstream)
+  };
+
+};
+
+
+var replaceValues = function(instream, key, values, options) {
+
+  var options = options || {};
+  var transforms = options.transforms || {};
+
+  var startInject = '<!\\-\\-\\s*inject:' + key + '\\s*\\-\\->';
+  var endInject = '<!\\-\\-\\s*endinject\\s*\\-\\->';
+  var pattern = startInject + '([\\s\\S]*?)' + endInject;
+  var regex = new RegExp(pattern, 'g');
+
+  // fill in template using values
+  var fn = function() {
+
+    var template = arguments[1];
+
+    // Replace each bracket using the function.
+    return template.replace(bracketRegex, function() {
+
+      // Build array of transform functions, but don't call them yet.
+      // Function may be undefined if it does not exist in transforms.
+
+      var match = arguments[1];
+      var tokens = match.trim().split(/\s+/);
+
+      // Tokens may be values or transforms.
+      // Convert values to transform functions.
+      // Try finding token in values;
+      // then try finding token in transforms.
+
+      var transformFunctions = tokens.map((token) => {
+        var value = values[token];
+        if (typeof value !== 'undefined') {
+          return () => { return value };
+        }
+        else {
+          return transforms[token];
+        }
+      });
+
+      // Call all the transform functions. Return the net result.
+
+      var transformation = '';
+
+      transformFunctions.forEach((transformFunction, index) => {
+        try {
+          transformation = transformFunction(transformation);
+        }
+        catch (e) {
+          console.warn('Bad token:', tokens[index]);
+        }
+      });
+
+      return transformation;
+
+    });
+
+  };
+
+  var outstream = instream.pipe(replacestream(regex, fn));
+
+  return {
+    replaceValues: replaceValues.bind(null, outstream),
     replace: replace.bind(null, outstream),
     write: write.bind(null, outstream)
   };
@@ -126,6 +196,7 @@ var write = function(instream, outfile, callback) {
   instream.pipe(writestream).on('finish', cb);
 
   return {
+    replaceValues: replaceValues.bind(null, instream),
     replace: replace.bind(null, instream),
     write: write.bind(null, instream)
   };
@@ -142,6 +213,7 @@ module.exports = function inject(infile) {
   var outstream = fs.createReadStream(infile);
 
   return {
+    replaceValues: replaceValues.bind(null, outstream),
     replace: replace.bind(null, outstream),
     write: write.bind(null, outstream)
   };
