@@ -20,11 +20,11 @@ inject(infile)
 .write([outfile]);
 
 inject(infile)
-.replace(key1, globs1... [, options1])
-.write([outfile1])
-.replace(key2, globs2... [, options2])
-.replaceValues(key3, globs3... [, options3])
-.write([outfile2]);
+.replace(key, globs... [, options])
+.write([outfile])
+.replace(key, globs... [, options])
+.replaceValues(key, values [, options])
+.write([outfile]);
 ```
 
 
