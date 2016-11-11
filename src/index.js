@@ -8,8 +8,12 @@ var bracketRegex = new RegExp('\\{([\\s\\S]*?)\\}','g');
 var noop = Function.prototype;
 
 
-function Injectable(instream) {
-  this.instream = instream;
+/**
+ * Injectable
+ * @param {stream} stream
+ */
+function Injectable(stream) {
+  this.stream = stream;
 }
 
 
@@ -83,8 +87,8 @@ Injectable.prototype.replace = function(tag, globs, options) {
 
   };
 
-  var outstream = this.instream.pipe(replacestream(regex, fn));
-  return new Injectable(outstream);
+  this.stream = this.stream.pipe(replacestream(regex, fn));
+  return this;
 };
 
 
@@ -151,8 +155,8 @@ Injectable.prototype.replaceValues = function(tag, values, options) {
 
   };
 
-  var outstream = this.instream.pipe(replacestream(regex, fn));
-  return new Injectable(outstream);
+  this.stream = this.stream.pipe(replacestream(regex, fn));
+  return this;
 };
 
 
@@ -187,17 +191,14 @@ Injectable.prototype.write = function(outfile, callback) {
       throw new UsageError('Invalid arguments passed to `write`');
   }
 
-  this.instream.pipe(writestream).on('finish', cb);
-  return new Injectable(this.instream);
+  this.stream.pipe(writestream).on('finish', cb);
+  return this;
 };
 
 
 module.exports = function inject(infile) {
-
   if (typeof infile !== 'string') {
     throw new UsageError('Infile must be a string');
   }
-
-  var outstream = fs.createReadStream(infile);
-  return new Injectable(outstream);
+  return new Injectable(fs.createReadStream(infile));
 }
