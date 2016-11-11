@@ -8,31 +8,20 @@ var bracketRegex = new RegExp('\\{([\\s\\S]*?)\\}','g');
 var noop = Function.prototype;
 
 
-var replace = function() {
+/**
+ * @param  {stream} instream
+ * @param  {string} key
+ * @param  {string[]} globs
+ * @param  {Object} options
+ * @return {Injectable}
+ */
+var replace = function(instream, key, globs, options) {
 
   if (arguments.length < 3) {
     throw new UsageError('Not enough arguments');
   }
 
-  var args = Array.from(arguments);
-
-  var instream = args[0];
-  var key = args[1];
-  var globs;
-  var options;
-
-  var lastArg = args[args.length - 1];
-  // options provided
-  if (typeof lastArg === 'object') {
-    globs = args.slice(2, args.length - 1);
-    options = lastArg;
-  }
-  // options not provided
-  else {
-    globs = args.slice(2);
-    options = utils.findOptionsFile();
-  }
-
+  var options = options || utils.findOptionsFile();
   var transforms = options.transforms || {};
 
   var startInject = '<!\\-\\-\\s*inject:' + key + '\\s*\\-\\->';

@@ -16,13 +16,13 @@ $ html-injector infile key globs... > outfile
 var inject = require('html-injector);
 
 inject(infile)
-.replace(key, globs... [, options])
+.replace(key, globs [, options])
 .write([outfile]);
 
 inject(infile)
-.replace(key, globs... [, options])
+.replace(key, globs [, options])
 .write([outfile])
-.replace(key, globs... [, options])
+.replace(key, globs [, options])
 .replaceValues(key, values [, options])
 .write([outfile]);
 ```
@@ -55,9 +55,9 @@ Inside infile, use special start and end injection tags to mark content to be re
 
 
 
-### .replace(key, globs... [, options])
+### .replace(key, globs [, options])
 
-For each glob-matching file, output an injected version of all the content between the `inject:key` and `endinject` tags. 
+For each glob-matching file, output an injected version of all the content between the `inject:key` and `endinject` tags.
 
 Returns an object with three methods: `replace`, `replaceValues`, `write`.
 
@@ -69,9 +69,9 @@ String which differentiates pairs of injection tags.
 
 The key is specified in the `inject` tag after a colon. In the example above, the key is `js`.
 
-#### globs...
+#### globs
 
-`string...`
+`string[]`
 
 One or more [node-glob](https://github.com/isaacs/node-glob) patterns. Files matching the globs will get their paths or content injected into infile.
 

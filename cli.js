@@ -43,7 +43,7 @@ var target = program.args[0];
 var rest = program.args.slice(1);
 
 try {
-  inject(target).replace.apply(null, rest).write();
+  inject(target).replace.call(null, rest).write();
 }
 catch (e) {
   if (e instanceof UsageError) {
