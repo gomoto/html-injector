@@ -25,6 +25,10 @@ Injectable.prototype.replace = function(tag, globs, options) {
     throw new UsageError('Not enough arguments');
   }
 
+  if (!Array.isArray(globs)) {
+    throw new UsageError('File globs must be an array');
+  }
+
   options = options || utils.findOptionsFile();
   var transforms = options.transforms || {};
 
