@@ -10,12 +10,12 @@ var noop = Function.prototype;
 
 /**
  * @param  {stream} instream
- * @param  {string} key
+ * @param  {string} tag
  * @param  {string[]} globs
  * @param  {Object} options
  * @return {Injectable}
  */
-var replace = function(instream, key, globs, options) {
+var replace = function(instream, tag, globs, options) {
 
   if (arguments.length < 3) {
     throw new UsageError('Not enough arguments');
@@ -24,9 +24,8 @@ var replace = function(instream, key, globs, options) {
   var options = options || utils.findOptionsFile();
   var transforms = options.transforms || {};
 
-  var startInject = '<!\\-\\-\\s*inject:' + key + '\\s*\\-\\->';
-  var endInject = '<!\\-\\-\\s*endinject\\s*\\-\\->';
-  var pattern = startInject + '([\\s\\S]*?)' + endInject;
+  var injectionTag = '<!\\-\\-\\s*' + tag + '\\s*\\-\\->';
+  var pattern = injectionTag + '([\\s\\S]*?)' + injectionTag;
   var regex = new RegExp(pattern, 'g');
 
   // repeat template (stuff between the start and end tags) for each glob
@@ -87,14 +86,13 @@ var replace = function(instream, key, globs, options) {
 };
 
 
-var replaceValues = function(instream, key, values, options) {
+var replaceValues = function(instream, tag, values, options) {
 
   var options = options || {};
   var transforms = options.transforms || {};
 
-  var startInject = '<!\\-\\-\\s*inject:' + key + '\\s*\\-\\->';
-  var endInject = '<!\\-\\-\\s*endinject\\s*\\-\\->';
-  var pattern = startInject + '([\\s\\S]*?)' + endInject;
+  var injectionTag = '<!\\-\\-\\s*' + tag + '\\s*\\-\\->';
+  var pattern = injectionTag + '([\\s\\S]*?)' + injectionTag;
   var regex = new RegExp(pattern, 'g');
 
   // fill in template using values

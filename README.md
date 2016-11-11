@@ -4,11 +4,11 @@
 
 ### command-line
 ```
-$ html-injector infile key globs...
+$ html-injector infile tag globs...
 ```
 
 ```
-$ html-injector infile key globs... > outfile
+$ html-injector infile tag globs... > outfile
 ```
 
 ### node.js
@@ -16,14 +16,14 @@ $ html-injector infile key globs... > outfile
 var inject = require('html-injector);
 
 inject(infile)
-.replace(key, globs [, options])
+.replace(tag, globs [, options])
 .write([outfile]);
 
 inject(infile)
-.replace(key, globs [, options])
+.replace(tag, globs [, options])
 .write([outfile])
-.replace(key, globs [, options])
-.replaceValues(key, values [, options])
+.replace(tag, globs [, options])
+.replaceValues(tag, values [, options])
 .write([outfile]);
 ```
 
@@ -44,30 +44,26 @@ Returns an object with three methods: `replace`, `replaceValues`, `write`.
 
 Name of the HTML file into which stuff gets injected.
 
-Inside infile, use special start and end injection tags to mark content to be replaced by injection.
+Inside infile, specify pairs of injection tags to mark content to be replaced.
 
 ```
-<!--inject:js-->
+<!--js-->
 <script src="{path}">{content}</script>
-<!--endinject-->
+<!--js-->
 ```
 
 
 
 
-### .replace(key, globs [, options])
+### .replace(tag, globs [, options])
 
-For each glob-matching file, output an injected version of all the content between the `inject:key` and `endinject` tags.
+For each glob-matching file, output an injected version of all the content between the specified injection tag.
 
 Returns an object with three methods: `replace`, `replaceValues`, `write`.
 
-#### key
+#### tag
 
 `string`
-
-String which differentiates pairs of injection tags.
-
-The key is specified in the `inject` tag after a colon. In the example above, the key is `js`.
 
 #### globs
 
@@ -86,15 +82,15 @@ Options can alternatively be specified in a special file called hi.js at the roo
 
 
 
-### .replaceValues(key, values [, options])
+### .replaceValues(tag, values [, options])
 
-Inject values into the content between the `inject:key` and `endinject` tags.
+Inject values into the content between the injection tags.
 
 With replace(), a file must exist even for its path to get injected (it must match the globs). But sometimes you already know the path and do not need to wait for the file to be generated. replaceValues() injects content based on a map of values.
 
 Returns an object with three methods: `replace`, `replaceValues`, `write`.
 
-#### key
+#### tag
 
 `string`
 
@@ -176,11 +172,11 @@ project
 app.html
 ```
 <body>
-  <!--inject:tpl-->
+  <!--tpl-->
   <script type="text/ng-template" id="{path}">
     {content}
   </script>
-  <!--endinject-->
+  <!--tpl-->
 </body>
 ```
 
@@ -253,11 +249,11 @@ module.exports = {
 app.html (use transforms here)
 ```
 <body>
-  <!--inject:tpl-->
+  <!--tpl-->
   <script type="text/ng-template" id="{path abbreviateTemplates capitalizeDiv}">
     {content capitalizeDiv}
   </script>
-  <!--endinject-->
+  <!--tpl-->
 </body>
 ```
 
@@ -323,10 +319,10 @@ project
 app.html
 ```
 <body>
-  <!--inject:js-->
+  <!--js-->
   <script src="{angular}"></script>
   <script src="{pouchdb}"></script>
-  <!--endinject-->
+  <!--js-->
 </body>
 ```
 
