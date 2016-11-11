@@ -8,20 +8,24 @@ var bracketRegex = new RegExp('\\{([\\s\\S]*?)\\}','g');
 var noop = Function.prototype;
 
 
+function Injectable(instream) {
+  this.instream = instream;
+}
+
+
 /**
- * @param  {stream} instream
  * @param  {string} tag
  * @param  {string[]} globs
  * @param  {Object} options
- * @return {Injectable}
+ * @return {Injectable} injectable
  */
-var replace = function(instream, tag, globs, options) {
+Injectable.prototype.replace = function(tag, globs, options) {
 
-  if (arguments.length < 3) {
+  if (arguments.length < 2) {
     throw new UsageError('Not enough arguments');
   }
 
-  var options = options || utils.findOptionsFile();
+  options = options || utils.findOptionsFile();
   var transforms = options.transforms || {};
 
   var injectionTag = '<!\\-\\-\\s*' + tag + '\\s*\\-\\->';
@@ -75,18 +79,18 @@ var replace = function(instream, tag, globs, options) {
 
   };
 
-  var outstream = instream.pipe(replacestream(regex, fn));
-
-  return {
-    replaceValues: replaceValues.bind(null, outstream),
-    replace: replace.bind(null, outstream),
-    write: write.bind(null, outstream)
-  };
-
+  var outstream = this.instream.pipe(replacestream(regex, fn));
+  return new Injectable(outstream);
 };
 
 
-var replaceValues = function(instream, tag, values, options) {
+/**
+ * @param  {string} tag
+ * @param  {Object} values
+ * @param  {Object} options
+ * @return {Injectable} injectable
+ */
+Injectable.prototype.replaceValues = function(tag, values, options) {
 
   var options = options || {};
   var transforms = options.transforms || {};
@@ -143,27 +147,26 @@ var replaceValues = function(instream, tag, values, options) {
 
   };
 
-  var outstream = instream.pipe(replacestream(regex, fn));
-
-  return {
-    replaceValues: replaceValues.bind(null, outstream),
-    replace: replace.bind(null, outstream),
-    write: write.bind(null, outstream)
-  };
-
+  var outstream = this.instream.pipe(replacestream(regex, fn));
+  return new Injectable(outstream);
 };
 
 
-var write = function(instream, outfile, callback) {
+/**
+ * @param  {string} outfile
+ * @param  {Function} callback
+ * @return {Injectable} injectable
+ */
+Injectable.prototype.write = function(outfile, callback) {
 
   var writestream, cb;
 
   switch(arguments.length) {
-    case 1:
+    case 0:
       writestream = process.stdout;
       cb = noop;
       break;
-    case 2:
+    case 1:
       if (typeof outfile === 'string') {
         writestream = fs.createWriteStream(outfile);
         cb = noop;
@@ -172,7 +175,7 @@ var write = function(instream, outfile, callback) {
         throw new UsageError('outfile must be a string. Cannot specify callback without outfile');
       }
       break;
-    case 3:
+    case 2:
       writestream = fs.createWriteStream(outfile);
       cb = callback;
       break;
@@ -180,14 +183,8 @@ var write = function(instream, outfile, callback) {
       throw new UsageError('Invalid arguments passed to `write`');
   }
 
-  instream.pipe(writestream).on('finish', cb);
-
-  return {
-    replaceValues: replaceValues.bind(null, instream),
-    replace: replace.bind(null, instream),
-    write: write.bind(null, instream)
-  };
-
+  this.instream.pipe(writestream).on('finish', cb);
+  return new Injectable(this.instream);
 };
 
 
@@ -198,11 +195,5 @@ module.exports = function inject(infile) {
   }
 
   var outstream = fs.createReadStream(infile);
-
-  return {
-    replaceValues: replaceValues.bind(null, outstream),
-    replace: replace.bind(null, outstream),
-    write: write.bind(null, outstream)
-  };
-
+  return new Injectable(outstream);
 }
