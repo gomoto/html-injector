@@ -11,8 +11,9 @@ var noop = Function.prototype;
 
 
 /**
- * Replaces file content between each pair of tags with the specified tag type.
- * Transforms specified here take precedence over those from options file.
+ * A function that returns a through stream in which file content has been
+ * transformed between each pair of the specified tag.
+ * Any transforms specified here take precedence over those from options file.
  * @param  {string} tag
  * @param  {Object<string, string | Function>} transforms
  * @param  {string[]} globs
