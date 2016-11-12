@@ -9,44 +9,21 @@ $ html-injector infile tag globs... > outfile
 
 ### node.js
 ```
-var inject = require('html-injector);
+var htmlInjector = require('html-injector);
 
-inject(infile)
-.replace(tag, transforms [, globs])
-.write([outfile]);
+fs.createReadStream(infile)
+.pipe(htmlInjector(tag, transforms [, globs]))
+.pipe(fs.createWriteStream(outfile));
 ```
 
 
 
 
 
-### inject(infile)
+### HTMLInjector(tag, transforms [, globs])
 
-Opens a file for injection.
-
-Returns an Injectable instance.
-
-#### infile
-
-`string`
-
-Name of the HTML file into which stuff will be injected.
-
-
-
-
-
-## Injectable
-
-
-
-
-
-### Injectable.replace(tag, transforms [, globs])
-
-Replace the content between each pair of the specified tag.
-
-This can be called multiple times before calling write().
+A function that returns a through stream in which content has been transformed
+between each pair of the specified tag.
 
 #### tag
 
@@ -84,34 +61,6 @@ Two special transforms become available:
 
 $path returns file path
 $content returns file content
-
-
-
-
-
-### .write([outfile], [callback])
-
-Write content to disk.
-
-After this, replace() can still be called.
-
-#### outfile (optional)
-
-`string`
-
-File to which injected content gets written.
-
-If outfile is not specified, content gets written to stdout.
-
-If only one parameter is passed to write(), it must be outfile. Callback cannot be the only parameter passed to write().
-
-#### callback (optional)
-
-`() => void`
-
-Function which gets called after outfile has been written to disk.
-
-outfile must be specified in order to use callback.
 
 
 

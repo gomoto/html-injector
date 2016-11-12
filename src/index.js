@@ -11,44 +11,29 @@ var noop = Function.prototype;
 
 
 /**
- * Injectable
- * @param {stream} stream
- */
-function Injectable(stream) {
-  this.stream = stream;
-}
-
-
-
-/**
- * Injectable.replace()
- *
- * Replace file content between each pair of tags with the specified tag type.
+ * Replaces file content between each pair of tags with the specified tag type.
  * Transforms specified here take precedence over those from options file.
- *
  * @param  {string} tag
  * @param  {Object<string, string | Function>} transforms
  * @param  {string[]} globs
- * @return {Injectable}
+ * @return {stream} a through stream
  */
-Injectable.prototype.replace = function(tag, transforms, globs) {
-  if (arguments.length < 2) {
-    throw new UsageError('Not enough arguments');
-  }
-
-  if (globs && !Array.isArray(globs)) {
-    throw new UsageError('Globs must be an array');
+module.exports = function HTMLInjector(tag, transforms, globs) {
+  if (!tag) {
+    throw new UsageError('tag is required');
   }
 
   transforms = Object.assign({}, utils.findOptionsFile().transforms, transforms);
+
+  if (globs && !Array.isArray(globs)) {
+    throw new UsageError('globs must be an array');
+  }
 
   var injectionTag = '<!\\-\\-\\s*' + tag + '\\s*\\-\\->';
   var pattern = injectionTag + '([\\s\\S]*?)' + injectionTag;
   var tagRegex = new RegExp(pattern, 'g');
   var tagReplacement = createTagContentReplacementFunction(transforms, globs);
-
-  this.stream = this.stream.pipe(replacestream(tagRegex, tagReplacement));
-  return this;
+  return replacestream(tagRegex, tagReplacement);
 };
 
 
@@ -131,53 +116,4 @@ function createBracketContentReplacementFunction(transforms, file) {
 
     return transformation;
   };
-}
-
-
-
-/**
- * Injectable.write()
- *
- * Write contents to specified outfile; call callback once contents are written.
- *
- * @param  {string} outfile
- * @param  {Function} callback
- * @return {Injectable} injectable
- */
-Injectable.prototype.write = function(outfile, callback) {
-  var writestream, cb;
-
-  switch(arguments.length) {
-    case 0:
-      writestream = process.stdout;
-      cb = noop;
-      break;
-    case 1:
-      if (typeof outfile === 'string') {
-        writestream = fs.createWriteStream(outfile);
-        cb = noop;
-      }
-      else {
-        throw new UsageError('outfile must be a string. Cannot specify callback without outfile');
-      }
-      break;
-    case 2:
-      writestream = fs.createWriteStream(outfile);
-      cb = callback;
-      break;
-    default:
-      throw new UsageError('Invalid arguments passed to `write`');
-  }
-
-  this.stream.pipe(writestream).on('finish', cb);
-  return this;
-};
-
-
-
-module.exports = function inject(infile) {
-  if (typeof infile !== 'string') {
-    throw new UsageError('Infile must be a string');
-  }
-  return new Injectable(fs.createReadStream(infile));
 }
