@@ -4,8 +4,10 @@ var UsageError = require('./UsageError');
 var utils = require('./utils');
 
 
+
 var bracketRegex = new RegExp('\\{([\\s\\S]*?)\\}','g');
 var noop = Function.prototype;
+
 
 
 /**
@@ -17,156 +19,132 @@ function Injectable(stream) {
 }
 
 
-/**
- * @param  {string} tag
- * @param  {string[]} globs
- * @param  {Object} options
- * @return {Injectable} injectable
- */
-Injectable.prototype.replace = function(tag, globs, options) {
 
+/**
+ * Injectable.replace()
+ *
+ * Replace file content between each pair of tags with the specified tag type.
+ * Transforms specified here take precedence over those from options file.
+ *
+ * @param  {string} tag
+ * @param  {Object<string, string | Function>} transforms
+ * @param  {string[]} globs
+ * @return {Injectable}
+ */
+Injectable.prototype.replace = function(tag, transforms, globs) {
   if (arguments.length < 2) {
     throw new UsageError('Not enough arguments');
   }
 
-  if (!Array.isArray(globs)) {
-    throw new UsageError('File globs must be an array');
+  if (globs && !Array.isArray(globs)) {
+    throw new UsageError('Globs must be an array');
   }
 
-  options = options || utils.findOptionsFile();
-  var transforms = options.transforms || {};
+  transforms = Object.assign({}, utils.findOptionsFile().transforms, transforms);
 
   var injectionTag = '<!\\-\\-\\s*' + tag + '\\s*\\-\\->';
   var pattern = injectionTag + '([\\s\\S]*?)' + injectionTag;
-  var regex = new RegExp(pattern, 'g');
+  var tagRegex = new RegExp(pattern, 'g');
+  var tagReplacement = createTagContentReplacementFunction(transforms, globs);
 
-  // repeat template (stuff between the start and end tags) for each glob
-  var fn = function() {
-
-    var template = arguments[1];
-
-    var results = utils.expandGlobs(globs).map((file) => {
-      return template.replace(bracketRegex, function() {
-
-        // Build array of transform functions, but don't call them yet.
-        // Function may be undefined if it does not exist in transforms.
-
-        var transformStrings = arguments[1].trim().split(/\s+/);
-
-        var transformFunctions = transformStrings.map((transformString) => {
-          if (transformString === 'path') {
-            return () => { return file };
-          }
-          else if (transformString === 'content') {
-            return () => { return fs.readFileSync(file, {encoding: 'utf8'}) };
-          }
-          else {
-            return transforms[transformString];
-          }
-        });
-
-        // Call all the transform functions. Return the net result.
-
-        var transformation = '';
-
-        transformFunctions.forEach((transformFunction, index) => {
-          try {
-            transformation = transformFunction(transformation);
-          }
-          catch (e) {
-            console.warn('Bad transform:', transformStrings[index]);
-          }
-        });
-
-        return transformation;
-
-      });
-    });
-
-    return results.join('');
-
-  };
-
-  this.stream = this.stream.pipe(replacestream(regex, fn));
+  this.stream = this.stream.pipe(replacestream(tagRegex, tagReplacement));
   return this;
 };
 
 
+
 /**
- * @param  {string} tag
- * @param  {Object} values
- * @param  {Object} options
- * @return {Injectable} injectable
+ * @param  {Object<string, string | Function>} transforms
+ * @param  {string[]} globs
+ * @return {Function} replacement function
  */
-Injectable.prototype.replaceValues = function(tag, values, options) {
-
-  var options = options || {};
-  var transforms = options.transforms || {};
-
-  var injectionTag = '<!\\-\\-\\s*' + tag + '\\s*\\-\\->';
-  var pattern = injectionTag + '([\\s\\S]*?)' + injectionTag;
-  var regex = new RegExp(pattern, 'g');
-
-  // fill in template using values
-  var fn = function() {
-
-    var template = arguments[1];
-
-    // Replace each bracket using the function.
-    return template.replace(bracketRegex, function() {
-
-      // Build array of transform functions, but don't call them yet.
-      // Function may be undefined if it does not exist in transforms.
-
-      var match = arguments[1];
-      var tokens = match.trim().split(/\s+/);
-
-      // Tokens may be values or transforms.
-      // Convert values to transform functions.
-      // Try finding token in values;
-      // then try finding token in transforms.
-
-      var transformFunctions = tokens.map((token) => {
-        var value = values[token];
-        if (typeof value !== 'undefined') {
-          return () => { return value };
-        }
-        else {
-          return transforms[token];
-        }
-      });
-
-      // Call all the transform functions. Return the net result.
-
-      var transformation = '';
-
-      transformFunctions.forEach((transformFunction, index) => {
-        try {
-          transformation = transformFunction(transformation);
-        }
-        catch (e) {
-          console.warn('Bad token:', tokens[index]);
-        }
-      });
-
-      return transformation;
-
-    });
-
+function createTagContentReplacementFunction(transforms, globs) {
+  /**
+   * Replacement function in the form of String.prototype.replace()
+   * @param  {string} fullMatch
+   * @param  {string} tagContent
+   * @return {string} tagContent with transforms applied
+   */
+  return function(fullMatch, tagContent) {
+    if (globs) {
+      return utils.expandGlobs(globs).map((file) => {
+        return tagContent.replace(bracketRegex, createBracketContentReplacementFunction(transforms, file));
+      }).join('');
+    } else {
+      return tagContent.replace(bracketRegex, createBracketContentReplacementFunction(transforms));
+    }
   };
+}
 
-  this.stream = this.stream.pipe(replacestream(regex, fn));
-  return this;
-};
 
 
 /**
+ * If file name is specified, two additional transforms are available:
+ * $path and $content
+ * @param  {Object<string, string | Function>} transforms
+ * @param  {string} file (optional) file name
+ * @return {Function} replacement function
+ */
+function createBracketContentReplacementFunction(transforms, file) {
+  /**
+   * Replacement function for String.prototype.replace()
+   * @param  {string} fullMatch
+   * @param  {string} bracketContent
+   * @return {string} result of all transforms
+   */
+  return function(fullMatch, bracketContent) {
+    var tokens = bracketContent.trim().split(/\s+/);
+
+    // Build array of transform functions, but don't call them yet.
+    // Function may be undefined if it does not exist in transforms.
+
+    var transformFunctions = tokens.map((token) => {
+      // special file transforms
+      if (file && token === '$path') {
+        return () => { return file };
+      }
+      if (file && token === '$content') {
+        return () => { return fs.readFileSync(file, {encoding: 'utf8'}) };
+      }
+
+      var transform = transforms[token];
+      if (typeof transform === 'function') {
+        return transform;
+      }
+      else if (typeof transform === 'string') {
+        return () => { return transform };
+      }
+    });
+
+    // Call all the transform functions. Return the net result.
+
+    var transformation = '';
+
+    transformFunctions.forEach((transformFunction, index) => {
+      try {
+        transformation = transformFunction(transformation);
+      }
+      catch (e) {
+        console.warn('Bad token:', tokens[index]);
+      }
+    });
+
+    return transformation;
+  };
+}
+
+
+
+/**
+ * Injectable.write()
+ *
+ * Write contents to specified outfile; call callback once contents are written.
+ *
  * @param  {string} outfile
  * @param  {Function} callback
  * @return {Injectable} injectable
  */
 Injectable.prototype.write = function(outfile, callback) {
-
   var writestream, cb;
 
   switch(arguments.length) {
@@ -194,6 +172,7 @@ Injectable.prototype.write = function(outfile, callback) {
   this.stream.pipe(writestream).on('finish', cb);
   return this;
 };
+
 
 
 module.exports = function inject(infile) {

@@ -15,7 +15,7 @@ module.exports = {
   },
 
   findOptionsFile: function() {
-    // Try to find options in current directory.
+    // Try to find options file in current directory.
     // NPM scripts always run from project root.
     var options;
     try {

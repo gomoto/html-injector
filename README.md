@@ -4,10 +4,6 @@
 
 ### command-line
 ```
-$ html-injector infile tag globs...
-```
-
-```
 $ html-injector infile tag globs... > outfile
 ```
 
@@ -16,95 +12,79 @@ $ html-injector infile tag globs... > outfile
 var inject = require('html-injector);
 
 inject(infile)
-.replace(tag, globs [, options])
-.write([outfile]);
-
-inject(infile)
-.replace(tag, globs [, options])
-.write([outfile])
-.replace(tag, globs [, options])
-.replaceValues(tag, values [, options])
+.replace(tag, transforms [, globs])
 .write([outfile]);
 ```
 
 
 
 
-## Methods
 
 ### inject(infile)
 
-Open a file for injection.
+Opens a file for injection.
 
-Returns an object with three methods: `replace`, `replaceValues`, `write`.
+Returns an Injectable instance.
 
 #### infile
 
 `string`
 
-Name of the HTML file into which stuff gets injected.
-
-Inside infile, specify pairs of injection tags to mark content to be replaced.
-
-```
-<!--js-->
-<script src="{path}">{content}</script>
-<!--js-->
-```
+Name of the HTML file into which stuff will be injected.
 
 
 
 
-### .replace(tag, globs [, options])
 
-For each glob-matching file, output an injected version of all the content between the specified injection tag.
+## Injectable
 
-Returns an object with three methods: `replace`, `replaceValues`, `write`.
+
+
+
+
+### Injectable.replace(tag, transforms [, globs])
+
+Replace the content between each pair of the specified tag.
+
+This can be called multiple times before calling write().
 
 #### tag
 
 `string`
+
+#### transforms
+
+`{[token: string]: string | Function}`
+
+A transform is a function that receives a string as input and returns a transformed string as output.
+
+Bracket content is initially an empty string. Transforms transform bracket content.
+
+As a shorthand, a transform that simply returns a string may be specified as a string.
+
+Transforms are called in the order they appear between brackets.
+
+For example, the following bracket will be replaced by the file path which gets passed to firstTransform then secondTransform.
+
+`{path firstTransform secondTransform}`
+
+That is, secondTransform(firstTransform(path)).
+
+Transforms can alternatively be specified in a special file called hi.js at the root of the project (see examples).
+Transforms passed directly to replace() take precedence.
 
 #### globs
 
 `string[]`
 
-One or more [node-glob](https://github.com/isaacs/node-glob) patterns. Files matching the globs will get their paths or content injected into infile.
+One or more [node-glob](https://github.com/isaacs/node-glob) patterns.
 
-#### options (optional)
+If this is specified, content between each pair of tags will be repeated once per matching file.
+Two special transforms become available:
 
-| Option       | Type     | Description |
-|--------------|----------|-------------|
-| `transforms` | `{[name: string]: (pathOrContent: string) => string}` | JavaScript object which defines transform functions |
+$path returns file path
+$content returns file content
 
-Options can alternatively be specified in a special file called hi.js at the root of the project (see examples).
-
-
-
-
-### .replaceValues(tag, values [, options])
-
-Inject values into the content between the injection tags.
-
-With replace(), a file must exist even for its path to get injected (it must match the globs). But sometimes you already know the path and do not need to wait for the file to be generated. replaceValues() injects content based on a map of values.
-
-Returns an object with three methods: `replace`, `replaceValues`, `write`.
-
-#### tag
-
-`string`
-
-Same as in replace().
-
-#### values
-
-`{[value: string]: string}`
-
-A map of values to inject. See replaceValues() example.
-
-#### options (optional)
-
-Same as in replace().
 
 
 
@@ -113,7 +93,7 @@ Same as in replace().
 
 Write content to disk.
 
-Returns an object with three methods: `replace`, `replaceValues`, `write`.
+After this, replace() can still be called.
 
 #### outfile (optional)
 
@@ -133,26 +113,6 @@ Function which gets called after outfile has been written to disk.
 
 outfile must be specified in order to use callback.
 
-
-
-
-## Transforms
-
-Transforms can alter content before it gets injected.
-
-A transform is a JavaScript function that receives a string as input and returns a transformed string as output.
-
-Consider `path` and `content` built-in transforms.
-
-`{path}` will be replaced by file path.
-
-`{content}` will be replaced by file content.
-
-#### Custom transforms
-
-More transforms can be defined in the options object or in a special hi.js file at the root of the project. Once defined, transforms can be used between single brackets between injection tags in the infile. Transforms get applied in the order they appear between brackets. See 'Example with transforms' for details.
-
-`{path firstTransform secondTransform}` will be replaced by file path after being passed to firstTransform then secondTransform.
 
 
 
@@ -190,7 +150,7 @@ span.html
 <span></span>
 ```
 
-Print to stdout
+Prints to stdout
 ```
 $ html-injector app.html tpl templates/*.html
 <body>

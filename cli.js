@@ -40,10 +40,11 @@ program
 .parse(process.argv);
 
 var target = program.args[0];
-var rest = program.args.slice(1);
+var tag = program.args[1];
+var globs = program.args.slice(2);
 
 try {
-  inject(target).replace.call(null, rest).write();
+  inject(target).replace(tag, null, globs).write();
 }
 catch (e) {
   if (e instanceof UsageError) {
