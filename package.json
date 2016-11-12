@@ -7,8 +7,8 @@
     "html-injector": "./cli.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "postversion": "git push --tags"
+    "version": "git add -A",
+    "postversion": "git push origin head && git push --tags"
   },
   "files": [
     "src/*.js",
