@@ -26,24 +26,37 @@
  *
  */
 
+var fs = require('fs');
 var package = require('./package.json');
-var inject = require('./' + package.main);
+var htmlInjector = require('./' + package.main);
 var program = require('commander');
 var UsageError = require('./src/UsageError');
 
 program._name = package.name;
 
 program
-.usage('[options] target key glob...')
+.usage('[options] input tag [glob...]')
 .description(package.description)
 .version(package.version)
 .parse(process.argv);
 
-var target = program.args[0];
-var rest = program.args.slice(1);
+var stream, tag, globs;
+if (process.stdin.isTTY) {
+  // create file stream from cli argument
+  stream = fs.createReadStream(program.args[0]);
+  tag = program.args[1];
+  globs = program.args.slice(2);
+} else {
+  // receiving file stream from stdin
+  stream = process.stdin;
+  tag = program.args[0];
+  globs = program.args.slice(1);
+}
 
 try {
-  inject(target).replace.apply(null, rest).write();
+  stream
+  .pipe(htmlInjector(tag, null, globs))
+  .pipe(process.stdout);
 }
 catch (e) {
   if (e instanceof UsageError) {
