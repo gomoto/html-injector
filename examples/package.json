@@ -1,0 +1,11 @@
+{
+  "name": "examples",
+  "version": "0.0.0",
+  "scripts": {
+    "cli-example": "html-injector app.html templates templates/*.html | html-injector vendor > index.html # this is broken",
+    "node-example": "node run.js"
+  },
+  "dependencies": {
+    "html-injector": ".."
+  }
+}

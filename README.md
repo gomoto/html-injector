@@ -66,9 +66,9 @@ Transforms are called in the order they appear between brackets.
 
 For example, the following bracket will be replaced by the file path which gets passed to firstTransform then secondTransform.
 
-`{path firstTransform secondTransform}`
+`{$path firstTransform secondTransform}`
 
-That is, secondTransform(firstTransform(path)).
+That is, secondTransform(firstTransform($path)).
 
 Transforms can alternatively be specified in a special file called hi.js at the root of the project (see examples).
 Transforms passed directly to replace() take precedence.
@@ -117,119 +117,24 @@ outfile must be specified in order to use callback.
 
 
 
-## Example
+## Examples
 
-Project structure
-```
-project
-│   app.html
-│
-└───templates
-    │   div.html
-    │   span.html
-```
+Before running any example, go to examples directory and run `npm i`.
 
-app.html
-```
-<body>
-  <!--tpl-->
-  <script type="text/ng-template" id="{path}">
-    {content}
-  </script>
-  <!--tpl-->
-</body>
-```
+### 1
+Run `npm run cli-example`.
+You should see the expected output below printed to stdout.
 
-div.html
-```
-<div></div>
-```
+### 2
+Run `npm run node-example`.
+You should get a generated index.html file containing the expected output below.
 
-span.html
+### Expected output
 ```
-<span></span>
-```
-
-Prints to stdout
-```
-$ html-injector app.html tpl templates/*.html
-<body>
-  <script type="text/ng-template" id="templates/div.html">
-    <div></div>
-  </script>
-  <script type="text/ng-template" id="templates/span.html">
-    <span></span>
-  </script>
-</body>
-```
-
-Write to index.html
-```
-$ html-injector app.html tpl templates/*.html > index.html
-```
-
-Write to index.html (node.js)
-```
-var inject = require('html-injector');
-inject('app.html')
-.replace('tpl', 'templates/*.html')
-.write('index.html');
-```
-
-
-
-
-## Example with transforms
-
-Project structure
-```
-project
-│   app.html
-│   hi.js
-│
-└───templates
-    │   div.html
-    │   span.html
-```
-
-hi.js (define transforms here)
-```
-module.exports = {
-  transforms: {
-    abbreviateTemplates: function(original) {
-      return original.replace('templates', 'tpls');
-    },
-    capitalizeDiv: function(original) {
-      return original.replace(new RegExp('div', 'g'), 'DIV');
-    }
-  }
-}
-```
-
-app.html (use transforms here)
-```
-<body>
-  <!--tpl-->
-  <script type="text/ng-template" id="{path abbreviateTemplates capitalizeDiv}">
-    {content capitalizeDiv}
-  </script>
-  <!--tpl-->
-</body>
-```
-
-div.html
-```
-<div></div>
-```
-
-span.html
-```
-<span></span>
-```
-
-Print to stdout
-```
-$ html-injector app.html tpl templates/*.html
+<head>
+  <script src="node_modules/angular/angular.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pouchdb/5.4.1/pouchdb.js"></script>
+</head>
 <body>
   <script type="text/ng-template" id="tpls/DIV.html">
     <DIV></DIV>
@@ -237,70 +142,5 @@ $ html-injector app.html tpl templates/*.html
   <script type="text/ng-template" id="tpls/span.html">
     <span></span>
   </script>
-</body>
-```
-
-Write to index.html
-```
-$ html-injector app.html tpl templates/*.html > index.html
-```
-
-Write to index.html (node.js)
-```
-var inject = require('html-injector');
-
-var options = {
-  transforms: {
-    abbreviateTemplates: function(original) {
-      return original.replace('templates', 'tpls');
-    },
-    capitalizeDiv: function(original) {
-      return original.replace(new RegExp('div', 'g'), 'DIV');
-    }
-  }
-};
-
-inject('app.html')
-.replace('tpl', 'templates/*.html', options)
-.write('index.html');
-```
-
-
-
-
-## Example with replaceValues
-
-Project structure
-```
-project
-│   app.html
-```
-
-app.html
-```
-<body>
-  <!--js-->
-  <script src="{angular}"></script>
-  <script src="{pouchdb}"></script>
-  <!--js-->
-</body>
-```
-
-Replace values and write to index.html (node.js)
-```
-var inject = require('html-injector');
-inject('app.html')
-.replaceValues('js', {
-  angular: 'node_modules/angular/angular.js',
-  pouchdb: 'https://cdnjs.cloudflare.com/ajax/libs/pouchdb/5.4.1/pouchdb.js'
-})
-.write('index.html');
-```
-
-index.html
-```
-<body>
-  <script src="node_modules/angular/angular.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pouchdb/5.4.1/pouchdb.js"></script>
 </body>
 ```

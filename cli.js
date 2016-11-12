@@ -34,7 +34,7 @@ var UsageError = require('./src/UsageError');
 program._name = package.name;
 
 program
-.usage('[options] target tag glob...')
+.usage('[options] target tag [glob...]')
 .description(package.description)
 .version(package.version)
 .parse(process.argv);
