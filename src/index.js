@@ -51,7 +51,7 @@ function createTagContentReplacementFunction(transforms, globs) {
    * @return {string} tagContent with transforms applied
    */
   return function(fullMatch, tagContent) {
-    if (globs) {
+    if (globs && globs.length > 0) {
       return utils.expandGlobs(globs).map((file) => {
         return tagContent.replace(bracketRegex, createBracketContentReplacementFunction(transforms, file));
       }).join('');
