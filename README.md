@@ -4,7 +4,7 @@
 
 ### command-line
 ```
-$ html-injector infile tag globs... > outfile
+$ html-injector infile tag [globs...] > outfile
 ```
 
 ### node.js
@@ -16,20 +16,33 @@ fs.createReadStream(infile)
 .pipe(fs.createWriteStream(outfile));
 ```
 
+### command-line (multiple injection)
+```
+$ html-injector infile tag [globs...] | html-injector tag [globs...] > outfile
+```
+
+### node.js (multiple injection)
+```
+var htmlInjector = require('html-injector);
+
+fs.createReadStream(infile)
+.pipe(htmlInjector(tag, transforms [, globs]))
+.pipe(htmlInjector(tag, transforms [, globs]))
+.pipe(fs.createWriteStream(outfile));
+```
 
 
 
-
-### HTMLInjector(tag, transforms [, globs])
+## HTMLInjector(tag, transforms [, globs])
 
 A function that returns a through stream in which content has been transformed
 between each pair of the specified tag.
 
-#### tag
+### tag
 
 `string`
 
-#### transforms
+### transforms
 
 `{[token: string]: string | Function}`
 
@@ -50,7 +63,7 @@ That is, secondTransform(firstTransform($path)).
 Transforms can alternatively be specified in a special file called hi.js at the root of the project (see examples).
 Transforms passed directly to replace() take precedence.
 
-#### globs
+### globs
 
 `string[]`
 
