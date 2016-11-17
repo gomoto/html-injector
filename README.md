@@ -81,9 +81,11 @@ $path returns file path
 
 $content returns file content
 
-#### cwd
+#### cwd (optional)
 
 `string`
+
+Default: process.cwd()
 
 Current working directory for globs. Injected file paths will be relative to this directory.
 

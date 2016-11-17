@@ -106,7 +106,7 @@ function createBracketContentReplacementFunction(transforms, file, cwd) {
     var transformFunctions = tokens.map((token) => {
       // special file transforms
       if (file && token === '$path') {
-        return () => { return path.relative(cwd, file) };
+        return () => { return path.relative(cwd || process.cwd(), file) };
       }
       if (file && token === '$content') {
         return () => { return fs.readFileSync(file, {encoding: 'utf8'}) };
