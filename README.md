@@ -4,23 +4,20 @@
 
 ## Usage
 
-### command-line
-```
-$ html-injector infile tag [globs...] > outfile
-```
-
 ### node.js
 ```
 var htmlInjector = require('html-injector);
 
 fs.createReadStream(infile)
-.pipe(htmlInjector(tag, transforms [, globs]))
+.pipe(htmlInjector({
+  tag: { globs, cwd, transforms }
+})
 .pipe(fs.createWriteStream(outfile));
 ```
 
-### command-line (multiple injection)
+### command-line
 ```
-$ html-injector infile tag [globs...] | html-injector tag [globs...] > outfile
+$ html-injector infile tag [globs...] > outfile
 ```
 
 ### node.js (multiple injection)
@@ -28,9 +25,16 @@ $ html-injector infile tag [globs...] | html-injector tag [globs...] > outfile
 var htmlInjector = require('html-injector);
 
 fs.createReadStream(infile)
-.pipe(htmlInjector(tag, transforms [, globs]))
-.pipe(htmlInjector(tag, transforms [, globs]))
+.pipe(htmlInjector({
+  tag1: { globs, cwd, transforms },
+  tag2: { globs, cwd, transforms }
+})
 .pipe(fs.createWriteStream(outfile));
+```
+
+### command-line (multiple injection)
+```
+$ html-injector infile tag1 [globs...] | html-injector tag2 [globs...] > outfile
 ```
 
 
