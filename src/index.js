@@ -1,4 +1,5 @@
 var fs = require('fs');
+var path = require('path');
 var replacestream = require('replacestream');
 var UsageError = require('./UsageError');
 var utils = require('./utils');
@@ -39,6 +40,7 @@ function createStreamReplacementFunction(config) {
 
       var transforms = Object.assign({}, utils.findOptionsFile().transforms, tagConfig.transforms);
       var globs = tagConfig.globs || [];
+      var cwd = tagConfig.cwd;
 
       if (!Array.isArray(globs)) {
         throw new UsageError('globs must be an array');
@@ -47,7 +49,7 @@ function createStreamReplacementFunction(config) {
       var injectionTag = '<!\\-\\-\\s*' + tag + '\\s*\\-\\->';
       var pattern = injectionTag + '([\\s\\S]*?)' + injectionTag;
       var tagRegex = new RegExp(pattern, 'g');
-      var tagReplacement = createTagContentReplacementFunction(transforms, globs);
+      var tagReplacement = createTagContentReplacementFunction(transforms, globs, cwd);
       content = content.replace(tagRegex, tagReplacement);
     }
     return content;
@@ -61,7 +63,7 @@ function createStreamReplacementFunction(config) {
  * @param  {string[]} globs
  * @return {Function} replacement function
  */
-function createTagContentReplacementFunction(transforms, globs) {
+function createTagContentReplacementFunction(transforms, globs, cwd) {
   /**
    * Replacement function in the form of String.prototype.replace()
    * @param  {string} fullMatch
@@ -71,7 +73,7 @@ function createTagContentReplacementFunction(transforms, globs) {
   return function(fullMatch, tagContent) {
     if (globs && globs.length > 0) {
       return utils.expandGlobs(globs).map((file) => {
-        return tagContent.replace(bracketRegex, createBracketContentReplacementFunction(transforms, file));
+        return tagContent.replace(bracketRegex, createBracketContentReplacementFunction(transforms, file, cwd));
       }).join('');
     } else {
       return tagContent.replace(bracketRegex, createBracketContentReplacementFunction(transforms));
@@ -88,7 +90,7 @@ function createTagContentReplacementFunction(transforms, globs) {
  * @param  {string} file (optional) file name
  * @return {Function} replacement function
  */
-function createBracketContentReplacementFunction(transforms, file) {
+function createBracketContentReplacementFunction(transforms, file, cwd) {
   /**
    * Replacement function for String.prototype.replace()
    * @param  {string} fullMatch
@@ -104,7 +106,7 @@ function createBracketContentReplacementFunction(transforms, file) {
     var transformFunctions = tokens.map((token) => {
       // special file transforms
       if (file && token === '$path') {
-        return () => { return file };
+        return () => { return path.relative(cwd, file) };
       }
       if (file && token === '$content') {
         return () => { return fs.readFileSync(file, {encoding: 'utf8'}) };

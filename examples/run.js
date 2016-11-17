@@ -18,6 +18,7 @@ fs.createReadStream('app.html')
     globs: [
       'templates/*.html'
     ],
+    // cwd: 'templates',
     transforms: {
       abbreviateTemplates: function(original) {
         return original.replace('templates', 'tpls');
