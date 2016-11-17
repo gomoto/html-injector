@@ -55,7 +55,9 @@ if (process.stdin.isTTY) {
 
 try {
   stream
-  .pipe(htmlInjector(tag, null, globs))
+  .pipe(htmlInjector({
+    [tag]: { globs }
+  }))
   .pipe(process.stdout);
 }
 catch (e) {

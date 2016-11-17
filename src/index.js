@@ -19,23 +19,40 @@ var noop = Function.prototype;
  * @param  {string[]} globs
  * @return {stream} a through stream
  */
-module.exports = function HTMLInjector(tag, transforms, globs) {
-  if (!tag) {
-    throw new UsageError('tag is required');
-  }
-
-  transforms = Object.assign({}, utils.findOptionsFile().transforms, transforms);
-
-  if (globs && !Array.isArray(globs)) {
-    throw new UsageError('globs must be an array');
-  }
-
-  var injectionTag = '<!\\-\\-\\s*' + tag + '\\s*\\-\\->';
-  var pattern = injectionTag + '([\\s\\S]*?)' + injectionTag;
-  var tagRegex = new RegExp(pattern, 'g');
-  var tagReplacement = createTagContentReplacementFunction(transforms, globs);
-  return replacestream(tagRegex, tagReplacement);
+module.exports = function HTMLInjector(config) {
+  var allRegex = new RegExp('[\\s\\S]*');
+  var replacementFunction = createStreamReplacementFunction(config || {});
+  return replacestream(allRegex, replacementFunction);
 };
+
+
+
+function createStreamReplacementFunction(config) {
+  /**
+   * Replacement function in the form of String.prototype.replace()
+   * @param  {string} content
+   * @return {string} stream content with transforms applied
+   */
+  return function(content) {
+    for (var tag in config) {
+      var tagConfig = config[tag] || {};
+
+      var transforms = Object.assign({}, utils.findOptionsFile().transforms, tagConfig.transforms);
+      var globs = tagConfig.globs || [];
+
+      if (!Array.isArray(globs)) {
+        throw new UsageError('globs must be an array');
+      }
+
+      var injectionTag = '<!\\-\\-\\s*' + tag + '\\s*\\-\\->';
+      var pattern = injectionTag + '([\\s\\S]*?)' + injectionTag;
+      var tagRegex = new RegExp(pattern, 'g');
+      var tagReplacement = createTagContentReplacementFunction(transforms, globs);
+      content = content.replace(tagRegex, tagReplacement);
+    }
+    return content;
+  };
+}
 
 
 
