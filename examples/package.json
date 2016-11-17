@@ -2,10 +2,12 @@
   "name": "examples",
   "version": "0.0.0",
   "scripts": {
-    "cli-example": "html-injector app.html templates templates/*.html | html-injector vendor > index.html",
-    "node-example": "node run.js"
+    "prepare-example": "rimraf node_modules && npm i",
+    "cli-example": "npm run prepare-example && html-injector app.html templates templates/*.html | html-injector vendor > index.html",
+    "node-example": "npm run prepare-example && node run.js"
   },
   "dependencies": {
-    "html-injector": ".."
+    "html-injector": "..",
+    "rimraf": "^2.5.4"
   }
 }
