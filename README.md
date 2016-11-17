@@ -1,5 +1,7 @@
 # html-injector
 
+
+
 ## Usage
 
 ### command-line
@@ -33,16 +35,55 @@ fs.createReadStream(infile)
 
 
 
-## HTMLInjector(tag, transforms [, globs])
+## HTMLInjector(configuration)
 
-A function that returns a through stream in which content has been transformed
-between each pair of the specified tag.
+Returns a through stream in which content has been transformed.
 
-### tag
+All transformations happen between injection tags:
+
+```
+<!--tag-->
+<script type="text/ng-template" id="{$path}">
+  {$content}
+</script>
+<!--tag-->
+```
+
+### configuration
+
+Configures how to transform content between each tag pair.
+
+```
+{
+  [tag]: {
+    globs,
+    cwd,
+    transforms
+  }
+}
+```
+
+#### globs
+
+`string[]`
+
+One or more [node-glob](https://github.com/isaacs/node-glob) patterns.
+
+If this is specified, content between each pair of tags will be repeated once per matching file.
+
+Two special transforms become available:
+
+$path returns file path
+
+$content returns file content
+
+#### cwd
 
 `string`
 
-### transforms
+Current working directory for globs. Injected file paths will be relative to this directory.
+
+#### transforms
 
 `{[token: string]: string | Function}`
 
@@ -53,7 +94,6 @@ Bracket content is initially an empty string. Transforms transform bracket conte
 As a shorthand, a transform that simply returns a string may be specified as a string.
 
 Transforms are called in the order they appear between brackets.
-
 For example, the following bracket will be replaced by the file path which gets passed to firstTransform then secondTransform.
 
 `{$path firstTransform secondTransform}`
@@ -63,31 +103,13 @@ That is, secondTransform(firstTransform($path)).
 Transforms can alternatively be specified in a special file called hi.js at the root of the project (see examples).
 Transforms passed directly to replace() take precedence.
 
-### globs
-
-`string[]`
-
-One or more [node-glob](https://github.com/isaacs/node-glob) patterns.
-
-If this is specified, content between each pair of tags will be repeated once per matching file.
-Two special transforms become available:
-
-$path returns file path
-$content returns file content
 
 
-
-
-
-## Examples
-
-Before running any example, go to examples directory and run `npm i`.
-
-### 1
+## Example 1
 Run `npm run cli-example`.
 You should see the expected output below printed to stdout.
 
-### 2
+## Example 2
 Run `npm run node-example`.
 You should get a generated index.html file containing the expected output below.
 
